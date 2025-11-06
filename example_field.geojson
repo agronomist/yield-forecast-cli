@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "field_name": "Zajdband Lote 3",
+        "placemark_name": "Zajdband - lote 3",
+        "sowing_date": "2025-06-06",
+        "wheat_variety": "BG 620"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -61.68078811604671,
+              -32.25269670934537
+            ],
+            [
+              -61.6741249691617,
+              -32.25393977920891
+            ],
+            [
+              -61.67129433544266,
+              -32.24265415360681
+            ],
+            [
+              -61.67788801380441,
+              -32.24140249010681
+            ],
+            [
+              -61.68078811604671,
+              -32.25269670934537
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
