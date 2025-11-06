@@ -329,4 +329,3 @@ For questions about the official CronoTrigo model, contact the University of Bue
 **Last Updated**: October 29, 2025
 
 **Analysis Status**: Active growing season, harvest in progress
-
