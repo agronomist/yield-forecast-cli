@@ -1,331 +1,198 @@
-# Las Petacas Wheat Yield Forecasting
+# Wheat Yield Forecasting CLI
 
-A wheat phenology modeling system for agricultural fields in Las Petacas, Argentina. This project implements a phenological model similar to CronoTrigo (University of Buenos Aires) to estimate growth stages and predict harvest timing based on variety characteristics and weather data.
+A command-line tool for forecasting wheat yield using Sentinel-2 satellite imagery, meteorological data, and phenological modeling. Works with any agricultural field defined in GeoJSON format.
 
-## 📊 Project Overview
+## 🌾 Overview
 
-This system analyzes **69 wheat fields** covering approximately **5,640 hectares** in the Las Petacas region (Córdoba/Santa Fe, Argentina) and tracks their growth stages from sowing to maturity.
+This CLI tool provides accurate wheat yield predictions by:
+- Fetching NDVI data from Sentinel-2 via Sentinel Hub Statistical API
+- Calculating fAPAR (fraction of Absorbed Photosynthetically Active Radiation)
+- Tracking phenological growth stages using thermal time accumulation
+- Estimating biomass accumulation using Radiation Use Efficiency (RUE)
+- Predicting final yield using harvest index
 
-### Current Status (as of October 29, 2025)
-- **40 fields (58.8%)** have reached maturity and are ready for harvest
-- **28 fields (41.2%)** are in grain fill stage
-- Sowing period: May 21 - June 13, 2025
-- Growing season: 138-161 days
-
-## 🌾 Wheat Varieties Analyzed
-
-The model includes calibration for 8 Argentine wheat varieties:
-
-| Variety | Fields | Maturity Rate | Notes |
-|---------|--------|---------------|-------|
-| DM Alerce | 18 | 100% | Early maturity, fully ready |
-| DM Pehuen | 18 | 22% | Later maturity, mostly in grain fill |
-| DM Algarrobo | 14 | 79% | Good progress |
-| Baguette 620 | 6 | 0% | Later sowing, still developing |
-| ACA Fresno | 4 | 100% | Early maturity |
-| BG 620 | 4 | 0% | Later sowing |
-| DM Aromo | 3 | 100% | Fast maturity |
-| BG 610 | 1 | 0% | Later sowing |
-
-## 🔬 Model Description
-
-### Phenological Stages Tracked
-
-The model tracks the following wheat growth stages using the Zadoks scale:
-
-1. **Emergence** (~145-150 GDD)
-2. **Tillering** (~380-410 GDD)
-3. **Stem Extension** (Zadoks 30, ~870-920 GDD)
-4. **Heading/Anthesis** (Zadoks 60, ~1380-1480 GDD)
-5. **Grain Fill** (Zadoks 70, ~1780-1880 GDD)
-6. **Maturity** (Zadoks 90, ~2100-2230 GDD)
-
-### Model Approach
-
-The model uses:
-- **Thermal Time Accumulation**: Growing Degree Days (GDD) with base temperature of 0°C
-- **Variety-Specific Parameters**: Different thermal requirements for each wheat variety
-- **Daily Weather Data**: Actual temperature data from Open-Meteo API
-- **Photoperiod Calculation**: Day length based on latitude and date
-
-**Note**: This is a simplified implementation based on standard wheat phenology principles. For research-grade predictions, contact the University of Buenos Aires for the official CronoTrigo model parameters and calibration data.
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-```bash
-python3 (Python 3.7+)
-requests library
-```
+## 🚀 Quick Start
 
 ### Installation
 
-1. Clone or download this repository
+1. Clone the repository:
+```bash
+git clone https://github.com/agronomist/yield-forecast-cli.git
+cd yield-forecast-cli
+```
+
 2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up credentials:
+```bash
+cp .env.example .env
+# Edit .env and add your Sentinel Hub credentials
+```
+
+### Using the CLI Tool
+
+The main entry point is the interactive CLI tool:
 
 ```bash
-pip install requests
+python forecast_yield_cli.py field.geojson
 ```
 
-### Usage
+The tool will:
+1. Load the field geometry from GeoJSON
+2. Prompt for planting date and wheat variety
+3. Fetch Sentinel-2 NDVI data (up to day before yesterday)
+4. Fetch solar radiation (PAR) data from Open-Meteo
+5. Calculate phenology stages and biomass accumulation
+6. Predict final yield
 
-#### 1. Run Phenology Analysis
+**Example:**
+```bash
+python forecast_yield_cli.py example_field.geojson
+```
+
+## 📋 Requirements
+
+- Python 3.8+
+- Sentinel Hub OAuth credentials (Client ID and Client Secret)
+- GeoJSON file with field polygon geometry
+- Internet connection for API calls
+
+### Python Dependencies
+
+See `requirements.txt` for the complete list. Key dependencies:
+- `requests` - API calls
+- `pandas` - Data processing
+- `numpy` - Numerical calculations
+- `rich` - Beautiful CLI formatting
+- `inquirer` - Interactive prompts
+- `python-dotenv` - Environment variable management
+
+## 🔑 Credentials Setup
+
+### Option 1: .env File (Recommended)
+
+Create a `.env` file in the project root:
 
 ```bash
-python3 weather_phenology_analyzer.py
+# .env
+SENTINEL_HUB_CLIENT_ID=your_client_id
+SENTINEL_HUB_CLIENT_SECRET=your_client_secret
 ```
 
-This will:
-- Fetch historical weather data from Open-Meteo API (free, no API key needed)
-- Calculate thermal time accumulation for each field
-- Estimate current growth stages
-- Generate output files:
-  - `phenology_analysis_results.json` - Complete analysis data
-  - `phenology_analysis_results.csv` - Spreadsheet-friendly format
+The `.env` file is automatically loaded and is excluded from version control.
 
-#### 2. Visualize Results
+### Option 2: Environment Variables
 
 ```bash
-python3 visualize_phenology.py
+export SENTINEL_HUB_CLIENT_ID="your_client_id"
+export SENTINEL_HUB_CLIENT_SECRET="your_client_secret"
 ```
 
-This generates:
-- Variety performance comparison
-- Growth stage timelines
-- Sowing date impact analysis
-- Harvest readiness forecast
-- Management recommendations
+### Getting Sentinel Hub Credentials
 
-## 📁 File Structure
+1. Sign up at [Sentinel Hub](https://www.sentinel-hub.com/)
+2. Create an OAuth application in the dashboard
+3. Copy your Client ID and Client Secret
+4. Add them to your `.env` file
+
+## 📁 Project Structure
 
 ```
-Las-Petacas-yield-forecasting/
-├── agricultural_fields_with_data.geojson   # Field boundaries and metadata
-├── wheat_phenology_model.py                # Core phenology model
-├── weather_phenology_analyzer.py           # Main analysis script
-├── visualize_phenology.py                  # Visualization and reporting
-├── sentinel_ndvi_fetcher.py                # Sentinel-2 NDVI data fetcher
-├── integrate_ndvi_phenology.py             # NDVI + phenology integration
-├── test_sentinel_connection.py             # Test Sentinel Hub API
-├── requirements.txt                        # Python dependencies
-├── README.md                               # This file
-├── NDVI_GUIDE.md                           # NDVI integration guide
-├── update_analysis.sh                      # Daily update script
-├── phenology_analysis_results.json         # Analysis output (generated)
-├── phenology_analysis_results.csv          # CSV export (generated)
-├── sentinel_ndvi_data.json                 # NDVI time series (generated)
-├── sentinel_ndvi_data.csv                  # NDVI CSV export (generated)
-└── integrated_ndvi_phenology.csv           # Combined analysis (generated)
+.
+├── forecast_yield_cli.py          # Main CLI tool
+├── wheat_phenology_model.py       # Phenology model with 50+ varieties
+├── calculate_fapar.py             # fAPAR calculation utilities
+├── fetch_solar_radiation.py       # PAR data fetching
+├── sentinel_ndvi_fetcher.py      # Sentinel-2 NDVI data fetching
+├── example_field.geojson          # Example GeoJSON file
+├── .env.example                   # Credentials template
+├── requirements.txt               # Python dependencies
+├── CLI_TOOL_README.md             # Detailed CLI documentation
+├── YIELD_FORECASTING_METHODOLOGY.md  # Complete methodology
+└── WHEAT_VARIETIES_PHENOLOGY.md   # Variety database documentation
 ```
 
-## 📈 Output Files
+## 🌾 Supported Wheat Varieties
 
-### phenology_analysis_results.json
+The system includes **50+ Argentine wheat varieties** organized by breeder:
 
-Complete analysis results including:
-- Field-by-field phenology data
-- Accumulated GDD for each field
-- Dates of achieved growth stages
-- Current development stage and progress
-- Summary statistics by variety and stage
+- **Don Mario (DM)**: 12 varieties (DM Alerce, DM Pehuen, DM Ceibo, etc.)
+- **ACA**: 8 varieties (ACA 303, ACA 304, ACA Fresno, etc.)
+- **Buck (BG)**: 5 varieties (BG 610, BG 620, BG 750, etc.)
+- **Baguette**: 3 varieties
+- **Bio4**: 2 varieties
+- **Klein**: 5 varieties
+- **Syngenta (SY)**: 3 varieties
+- **Other**: 5 common varieties
 
-### phenology_analysis_results.csv
+See `WHEAT_VARIETIES_PHENOLOGY.md` for the complete list and phenological parameters.
 
-Spreadsheet format with columns:
-- Field Name, Variety, Sowing Date
-- Days Since Sowing
-- Accumulated GDD
-- Current Stage, Stage Progress %
-- Dates for: Emergence, Tillering, Stem Extension, Heading, Grain Fill, Maturity
+## 📊 Methodology
 
-## 🔧 Customization
+The yield forecasting methodology is based on:
 
-### Adding New Varieties
+1. **NDVI to fAPAR Conversion**: Using empirical relationships
+2. **Phenology Modeling**: Thermal time accumulation (GDD) with variety-specific parameters
+3. **Biomass Calculation**: Daily APAR × RUE (Radiation Use Efficiency)
+4. **Yield Prediction**: Biomass × Harvest Index
 
-Edit `wheat_phenology_model.py` and add variety parameters to the `VARIETY_PARAMS` dictionary:
+For detailed equations and methodology, see `YIELD_FORECASTING_METHODOLOGY.md`.
 
-```python
-"New Variety Name": {
-    "vernalization_requirement": "medium",
-    "photoperiod_sensitivity": "medium",
-    "gdd_emergence": 145,
-    "gdd_tillering": 395,
-    "gdd_stem_extension": 890,
-    "gdd_heading": 1440,
-    "gdd_grain_fill": 1840,
-    "gdd_maturity": 2180,
+## 📝 GeoJSON Format
+
+Your GeoJSON file should contain a Feature with a Polygon geometry:
+
+```json
+{
+  "type": "Feature",
+  "properties": {
+    "field_name": "My Field"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[[lon1, lat1], [lon2, lat2], ...]]
+  }
 }
 ```
 
-### Using Different Weather Data
+The CLI will prompt you for planting date and wheat variety if they're not in the properties.
 
-The system uses Open-Meteo API by default. To use your own weather data, modify the `fetch_weather_data_open_meteo()` function in `weather_phenology_analyzer.py` to load from your data source.
+## 📖 Documentation
 
-Weather data format required:
-```python
-[
-    {
-        'date': 'YYYY-MM-DD',
-        'tmax': 25.5,  # Maximum temperature (°C)
-        'tmin': 12.3,  # Minimum temperature (°C)
-        'precipitation': 5.0  # Optional
-    },
-    ...
-]
-```
+- **CLI_TOOL_README.md**: Complete CLI tool documentation
+- **YIELD_FORECASTING_METHODOLOGY.md**: Step-by-step methodology with equations
+- **WHEAT_VARIETIES_PHENOLOGY.md**: Complete variety database and phenology model
 
-## 📊 Key Findings
+## 🔒 Security
 
-### Current Season Analysis
+**Important**: Never commit your `.env` file or hardcode credentials in scripts. The repository is configured to exclude:
+- `.env` files
+- All credential-related files
+- Data files (CSV, JSON, logs)
 
-1. **Early-sown fields (May 21-23)** have reached maturity:
-   - DM Alerce: All 18 fields mature
-   - DM Algarrobo: 11/14 fields mature
-   - Average: 159 days from sowing to maturity
+## 🛠️ Development
 
-2. **Later-sown fields (June 1-13)** are in grain fill:
-   - DM Pehuen: 14/18 fields still developing
-   - Baguette 620: All 6 fields in grain fill
-   - Average: 142-150 days since sowing
+### Adding New Varieties
 
-3. **Variety Performance**:
-   - Fastest: DM Aromo (~150 days to maturity)
-   - Medium: DM Alerce, ACA Fresno (~159 days)
-   - Slower: DM Pehuen, Baguette 620 (>160 days projected)
+Varieties are defined in `wheat_phenology_model.py` in the `VARIETY_PARAMS` dictionary. See `WHEAT_VARIETIES_PHENOLOGY.md` for parameter estimation guidelines.
 
-## 🌤️ Weather Data
+## 📄 License
 
-The system automatically fetches historical weather data from the [Open-Meteo Archive API](https://open-meteo.com), which provides:
-- Daily maximum and minimum temperatures
-- Historical weather back to 1940
-- Free access with no API key required
-- Location: Las Petacas region (-32.51°S, -61.43°W)
+[Add your license here]
 
-## 📚 Scientific Background
+## 🙏 Acknowledgments
 
-### CronoTrigo Model
-
-CronoTrigo is a wheat phenology model developed by the School of Agronomy at the University of Buenos Aires (FAUBA). It predicts wheat development stages based on:
-
-- **Thermal Time**: Growing degree day accumulation
-- **Photoperiod**: Day length sensitivity by variety
-- **Vernalization**: Cold temperature requirements
-- **Variety Genetics**: Cultivar-specific parameters
-
-For the official CronoTrigo model and calibrated parameters for Argentine varieties, contact:
-- **FAUBA - Cátedra de Cerealicultura**
-- University of Buenos Aires, School of Agronomy
-- Website: http://www.agro.uba.ar
-
-### Model References
-
-This implementation is based on standard wheat phenology modeling approaches:
-- Growing Degree Day (GDD) calculation using base temperature
-- Zadoks scale for growth stage classification
-- Thermal time requirements calibrated for Argentine varieties
-
-## 🎯 Use Cases
-
-1. **Harvest Planning**
-   - Identify fields ready for harvest
-   - Optimize equipment scheduling
-   - Plan storage and logistics
-
-2. **Crop Management**
-   - Time fertilizer and pesticide applications
-   - Irrigation scheduling during critical stages
-   - Disease and pest monitoring
-
-3. **Yield Forecasting**
-   - Estimate harvest timing
-   - Predict yield potential based on stage progression
-   - Early warning for delayed development
-
-4. **Research & Planning**
-   - Compare variety performance
-   - Analyze sowing date impact
-   - Optimize next season's planting decisions
-
-## ⚠️ Limitations
-
-1. **Model Simplifications**:
-   - Does not account for water stress
-   - Simplified vernalization treatment
-   - No explicit pest/disease effects
-   - Weather data is historical, not forecasted
-
-2. **Variety Parameters**:
-   - Thermal time requirements are approximations
-   - Official CronoTrigo calibration would improve accuracy
-   - May need local calibration for your specific conditions
-
-3. **Weather Data**:
-   - Uses regional weather (single point for all fields)
-   - Microclimate variations not captured
-   - Future predictions require weather forecasts
-
-## 🛰️ Satellite NDVI Integration
-
-The system now includes **Sentinel-2 NDVI monitoring** using Sentinel Hub's Statistical API:
-
-### Features
-- ✅ Weekly NDVI time series from sowing to present
-- ✅ Cloud filtering and scene classification masking
-- ✅ Safe handling of large fields (dynamic resolution)
-- ✅ Integration with phenology predictions
-- ✅ Anomaly detection for crop stress
-
-### Quick Start
-
-**1. Test connection (recommended first):**
-```bash
-python3 test_sentinel_connection.py
-```
-
-**2. Fetch NDVI for all fields (~30-60 min):**
-```bash
-python3 sentinel_ndvi_fetcher.py
-```
-
-**3. Integrate with phenology analysis:**
-```bash
-python3 integrate_ndvi_phenology.py
-```
-
-See [NDVI_GUIDE.md](NDVI_GUIDE.md) for complete documentation.
-
-## 🔮 Future Enhancements
-
-Potential improvements:
-- Soil moisture modeling
-- Yield prediction algorithms based on NDVI trends
-- Weather forecast integration for future stage predictions
-- Disease risk modeling
-- Water stress impact on development rate
-- Integration with official CronoTrigo parameters
-- LAI estimation from Sentinel-2
-
-## 📝 License
-
-This project is provided for educational and research purposes. Weather data is provided by Open-Meteo under their terms of service.
-
-## 🤝 Contributing
-
-Suggestions and improvements are welcome! Areas for contribution:
-- Local calibration with field observations
-- Integration with other data sources
-- Yield prediction models
-- Visualization improvements
+- **CRONOTRIGO Model**: FAUBA - School of Agronomy, University of Buenos Aires
+- **Sentinel Hub**: For satellite data access
+- **Open-Meteo**: For meteorological data
 
 ## 📧 Contact
 
-For questions about this implementation, please open an issue on the project repository.
-
-For questions about the official CronoTrigo model, contact the University of Buenos Aires School of Agronomy.
+[Add your contact information]
 
 ---
 
-**Last Updated**: October 29, 2025
-
-**Analysis Status**: Active growing season, harvest in progress
+**Note**: This tool fetches data up to "day before yesterday" to ensure only historical data is requested from archive APIs.

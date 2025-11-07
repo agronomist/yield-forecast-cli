@@ -8,7 +8,7 @@ A command-line interface tool for forecasting wheat yield using Sentinel-2 satel
 - 🛰️ **Sentinel-2 Integration**: Automatically fetches NDVI data via Statistical API
 - ☀️ **Meteorological Data**: Fetches solar radiation (PAR) from Open-Meteo API
 - 📊 **Complete Pipeline**: From NDVI to yield prediction in one command
-- 🌱 **Variety Support**: 9 pre-configured wheat varieties plus custom parameters
+- 🌱 **Variety Support**: 50+ Argentine wheat varieties with phenological parameters
 - 💾 **JSON Export**: Saves detailed results for further analysis
 - 🎨 **Styled Output**: Color-coded prompts, progress indicators, and formatted results
 - ⌨️ **Interactive Selection**: Arrow-key navigation for variety selection (when `inquirer` is installed)
@@ -329,7 +329,7 @@ For issues or questions:
 
 ## License
 
-This tool is part of the Las-Petacas-yield-forecasting project.
+[Add your license here]
 
 ---
 
